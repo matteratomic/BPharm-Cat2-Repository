@@ -249,7 +249,7 @@ body {
 }
 
 .m-form-back{
-	background-color:rgba(0,0,0,0.5);
+	background-color:transparent
 }
 
 @media (min-width: 48em) {

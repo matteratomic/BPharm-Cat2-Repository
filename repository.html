@@ -44,9 +44,23 @@ main{
     justify-content:center;
     align-items:center;
     flex-wrap:wrap;
+    animation-name:appear;
+    animation-duration:0.5s;
+    animation-fill-mode:forwards;
+    animation-timing-function:linear;
     padding:0px 10px 0px 10px;
     text-align:center;
   }
+
+@keyframes appear{
+  0%{
+    opacity:0
+  }  
+  100%{
+    opacity:1
+  }
+}
+
   .m-file:hover{
     transform:translateY(-10px)
   }
