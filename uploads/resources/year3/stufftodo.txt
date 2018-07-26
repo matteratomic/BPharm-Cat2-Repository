@@ -1,0 +1,2 @@
+
+wnloading files from a web site. Logging in to web shops such as Amazon and get our order information. Logging in to the webmail to get the number of unread e-mails. Use this to make end-to-end tests
