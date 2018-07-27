@@ -32,7 +32,17 @@
   </head>
 <style rel='stylesheet' type='text/css'>
 main{
-  overflow-y:scroll
+padding-top:50px;
+  overflow-y:scroll;
+  width:100%;
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:center
+}
+::-webkit-scrollbar {
+   background-color:rgba(0,0,0,0.3);
+   border-radius:20px;
 }
   .m-file{
     transition-property: all;
@@ -50,6 +60,7 @@ main{
     animation-timing-function:linear;
     padding:0px 10px 0px 10px;
     text-align:center;
+	margin:10px;
   }
 
 @keyframes appear{
@@ -81,7 +92,12 @@ main{
       </header>
 
       <main role="main">
-  
+    <div class='m-loader-content'>
+  <div class='m-loader-background-two'>
+    <div class='m-loader'></div>
+	<p id='loading-text'>Loading..</p>
+	</div>
+	</div>
       </main>
 
       <footer class="mastfoot mt-auto">
@@ -100,7 +116,7 @@ main{
     <script type="text/javascript">
 
 var main = document.querySelector('main')
-
+var loader = document.querySelector('.m-loader-background-two')
 
 window.onpopstate = (e)=>{
   let path = e.state.path || 'resources'
@@ -117,9 +133,10 @@ window.onpopstate = (e)=>{
   }).then((res)=>{
     //loader.classList.remove('m-loader-visible')
       res.data.forEach((file,i)=>{
+	  	let icon = file.type === 'directory' ? "http://icons.iconarchive.com/icons/custom-icon-design/flatastic-1/256/folder-icon.png" : "http://icons.iconarchive.com/icons/zhoolego/material/512/Filetype-Docs-icon.png"
       let fileNode = document.createElement('div')
      fileNode.classList.add('m-file')
-     fileNode.innerHTML = `<img style="width:100px;height:100px" src="http://pngimg.com/uploads/folder/folder_PNG8773.png"/><p>${file.name}</p>`
+     fileNode.innerHTML = `<img style="width:100px;height:100px" src=${icon}/><p>${file.name}</p>`
      fileNode.onclick = ()=>{
       if(file.type === 'directory'){
        traverseFolderRecursively(file.filepath)
@@ -140,9 +157,10 @@ getResourceList(path)
     window.history.pushState({path,name:'year1'},'repository','/repository.html')
     console.log(res.data)
     res.data.forEach((file,i)=>{
+	let icon = file.type === 'directory' ? "http://icons.iconarchive.com/icons/custom-icon-design/flatastic-1/256/folder-icon.png" : "http://icons.iconarchive.com/icons/zhoolego/material/512/Filetype-Docs-icon.png"
      let fileNode = document.createElement('div')
      fileNode.classList.add('m-file')
-     fileNode.innerHTML = `<img style="width:100px;height:100px" src="http://pngimg.com/uploads/folder/folder_PNG8773.png"/><p>${file.name}</p>`
+     fileNode.innerHTML = `<img style="width:100px;height:100px" src=${icon}/><p>${file.name}</p>`
      fileNode.onclick = ()=>{
       if(file.type === 'directory'){
        traverseFolderRecursively(file.filepath)
@@ -167,9 +185,7 @@ fetch(`/api/resources/?path=${path}`).then(res=>res.json())
 }
 
 var getResource = (path)=>{
-fetch(`/api/resources/?path=${path}&&isfile=true`)
-		.then((res)=>{console.log(res)})
-			.catch((err)=>{console.log(err)})
+		window.location.href = 'static'+path
 }
 
 </script>

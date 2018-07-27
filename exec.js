@@ -17,6 +17,7 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended:true}))
 app.use(cors())
 app.use(helmet())
+app.use('/static',express.static('./uploads'))
 app.use(express.static('./'))
 
 app.get('/',(req,res)=>{
@@ -111,7 +112,6 @@ app.get('/api/resources',(req,res)=>{
 				console.log(err)
 				}
 			})
-			res.set('Content-Type','application/pdf')
 			readStream.pipe(res)
 			
 	}else{
