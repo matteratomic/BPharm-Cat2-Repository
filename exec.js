@@ -52,9 +52,9 @@ const getResources = (filepath)=>{
 							try{
 							let stats = fs.statSync(newPath)
 							if(stats.isDirectory()){
-							return {name:f,type:'directory',filepath:`${filepath}\\${f}`}
+							return {name:f,type:'directory',filepath:`${filepath}/${f}`}
 							}else{
-							return {name:f,type:'file',filepath:`${filepath}\\${f}`}
+							return {name:f,type:'file',filepath:`${filepath}/${f}`}
 							}
 							}catch(err){
 								reject(err) 
