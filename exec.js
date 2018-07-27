@@ -101,7 +101,7 @@ app.get('/api/isdirectory',(req,res)=>{
 
 app.get('/api/resources',(req,res)=>{
 	console.log('fetching resources....')
-	let filepath = req.query.path || 'resources'
+	let filepath = req.query.path || '/resources'
 	getResources(filepath)
 		.then((result)=>{
 			res.status(200).json({data:result})
