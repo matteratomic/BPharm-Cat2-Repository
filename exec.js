@@ -5,6 +5,7 @@ var fs = require('fs')
 var bodyParser = require('body-parser')
 var path = require('path')
 var formidable = require('formidable')
+var helmet = require('helmet')
 
 process.on('uncaughtException',(err)=>{
 	console.log(err,'AN ERROR OCCURRED. NODE NOT EXITING')
@@ -15,6 +16,7 @@ app.listen(port,()=>{console.log(`Listening on port ${port}`)})
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended:true}))
 app.use(cors())
+app.use(helmet())
 app.use(express.static('./'))
 
 app.get('/',(req,res)=>{
@@ -100,17 +102,28 @@ app.get('/api/isdirectory',(req,res)=>{
 })
 
 app.get('/api/resources',(req,res)=>{
-	console.log('fetching resources....')
 	let filepath = req.query.path || '/resources'
+	let isFile = req.query.isfile
+	if(isFile){
+		let readStream = fs.createReadStream(__dirname+'/uploads'+filepath,(err)=>{
+			if(err){
+				res.status(500).send('500:Internal server error....This is embarrassing')
+				console.log(err)
+				}
+			})
+			res.set('Content-Type','application/pdf')
+			readStream.pipe(res)
+			
+	}else{
 	getResources(filepath)
 		.then((result)=>{
 			res.status(200).json({data:result})
 		})
 		.catch((err)=>{
-			res.status(500).send('500:Internal server Error')
+			res.status(500).send('500:Internal server error....This is embarrassing')
 		})
-})
 
+}})
 app.get('*',(req,res)=>{
 	res.sendFile(path.resolve(path.join(__dirname,'404.html')))
 })

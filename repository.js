@@ -9,11 +9,14 @@ var selectedPath = ''
 
 
 window.onload = ()=>{
-getResource()
+getResourceList()
   .then((res)=>{
     selectedPath = '/resources'
     window.history.pushState({path:'/resources',name:'year1'},'upload','/upload.html')
-    res.data.forEach((option,i)=>{
+    let empOption = document.createElement('option')
+	empOption.innerHTML = 'Select a folder'
+	selectElement.appendChild(empOption)
+	res.data.forEach((option,i)=>{
       let opt = document.createElement('option')
       opt.value = JSON.stringify({filepath:option.filepath,type:option.type,name:option.name})
       opt.innerHTML = option.name 
@@ -28,7 +31,7 @@ window.onpopstate = (e)=>{
    selectedPath = path
    console.log(`Selected path is ${path}`)
    loader.classList.add('m-loader-visible')
-  getResource(path)
+  getResourceList(path)
   .then((res)=>{
     console.log(res.data.length)
     if(res.data.length !==0){
@@ -39,6 +42,9 @@ window.onpopstate = (e)=>{
       return res
   }).then((res)=>{
     loader.classList.remove('m-loader-visible')
+	let empOption = document.createElement('option')
+	empOption.innerHTML = 'Select a folder in '+name 
+	selectElement.appendChild(empOption)
       res.data.forEach((option,i)=>{
         let opt = document.createElement('option')
         opt.value = JSON.stringify({filepath:option.filepath,type:option.type,name:option.name})
@@ -49,23 +55,34 @@ window.onpopstate = (e)=>{
 }
 
 function selectValueChanged(){
+	//find a way to tell if folder is empty
 var file = JSON.parse(selectElement.value)
 console.log(JSON.parse(selectElement.value))
 loader.classList.add('m-loader-visible')
 if(file.type == 'directory'){
   selectedPath = file.filepath
      console.log(`Selected path is ${selectedPath}`)
-window.history.pushState({path:file.filepath,name:file.name},file.name,'/upload.html')
-getResource(file.filepath)
+		window.history.pushState({path:file.filepath,name:file.name},file.name,'/upload.html')
+getResourceList(file.filepath)
   .then((res)=>{
   if(res.data.length !== 0){
       selectElement.innerHTML =''
+	  return {res,isEmpty:false}
     }else{ 
       console.log('end',selectedPath)
-    }       return res
-  }).then((res)=>{
+	  selectElement.innerHTML =''
+	let noFileOption = document.createElement('option')
+	noFileOption.innerHTML = file.name
+	noFileOption.value = file.path
+	selectElement.appendChild(noFileOption)
+	return {res,isEmpty:true}
+    }       
+  }).then((result)=>{
     loader.classList.remove('m-loader-visible')
-      res.data.forEach((option,i)=>{
+	let empOption = result.isEmpty ? null : document.createElement('option')
+	result.isEmpty ? null : empOption.innerHTML = "Select a folder in "+ file.name
+	result.isEmpty ? null : selectElement.appendChild(empOption)
+      result.res.data.forEach((option,i)=>{
         let opt = document.createElement('option')
         opt.value = JSON.stringify({filepath:option.filepath,type:option.type,name:option.name})
         opt.innerHTML = option.name || 'No files added' 
@@ -74,14 +91,16 @@ getResource(file.filepath)
   })
 }else{
   loader.classList.remove('m-loader-visible')
-  alert('You have to choose a folder path !')
+  alert('That is not a folder')
 }
 }
 
-var getResource = (path='/resources')=>{
+var getResourceList = (path='/resources')=>{
   return new Promise((resolve,reject)=>{
-fetch(`/api/resources/?path=${path}`).then(res=>res.json())
-.then((res)=>{resolve(res)}).catch((err)=>{reject(err)})
+fetch(`/api/resources/?path=${path}`)
+	.then(res=>res.json())
+		.then((res)=>{resolve(res)})
+			.catch((err)=>{reject(err)})
   })
 }
 

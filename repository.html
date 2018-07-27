@@ -106,7 +106,7 @@ window.onpopstate = (e)=>{
   let path = e.state.path || 'resources'
   let name = e.state.name || 'year2'
    //loader.classList.add('m-loader-visible')
-  getResource(path)
+  getResourceList(path)
   .then((res)=>{
     if(res.data.length !==0){
       main.innerHTML =''
@@ -135,7 +135,7 @@ window.onpopstate = (e)=>{
 
 function traverseFolderRecursively(path='/resources'){
 main.innerHTML =''
-getResource(path)
+getResourceList(path)
   .then((res)=>{
     window.history.pushState({path,name:'year1'},'repository','/repository.html')
     console.log(res.data)
@@ -147,8 +147,7 @@ getResource(path)
       if(file.type === 'directory'){
        traverseFolderRecursively(file.filepath)
       }else{
-        alert('That is a file')
-      }
+getResource(file.filepath)}
      }
      main.appendChild(fileNode)
     })
@@ -160,13 +159,18 @@ traverseFolderRecursively()
 }
 
 
-var getResource = (path='/resources')=>{
+var getResourceList = (path='/resources')=>{
   return new Promise((resolve,reject)=>{
 fetch(`/api/resources/?path=${path}`).then(res=>res.json())
 .then((res)=>{resolve(res)}).catch((err)=>{reject(err)})
   })
 }
 
+var getResource = (path)=>{
+fetch(`/api/resources/?path=${path}&&isfile=true`)
+		.then((res)=>{console.log(res)})
+			.catch((err)=>{console.log(err)})
+}
 
 </script>
   </body>
