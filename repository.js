@@ -1,4 +1,4 @@
-var uploadButton = document.querySelector('#upload')
+/* var uploadButton = document.querySelector('#upload')
 var loader = document.querySelector('.m-loader-background-two')
 var fileInputElement = document.querySelector('input[type="file"]')
 var form = document.querySelector('form')
@@ -6,9 +6,9 @@ var loadingText = document.querySelector('#loading-text')
 var selectElement = document.querySelector('select')
 var fileList = []
 var selectedPath = ''
+ */
 
-
-window.onload = ()=>{
+/* window.onload = ()=>{
 getResourceList()
   .then((res)=>{
     selectedPath = '/resources'
@@ -23,9 +23,9 @@ getResourceList()
       selectElement.appendChild(opt)
     })
   })
-}
+} */
 
-window.onpopstate = (e)=>{
+/* window.onpopstate = (e)=>{
   let path = e.state.path || 'resources'
   let name = e.state.name || 'year2'
    selectedPath = path
@@ -52,7 +52,7 @@ window.onpopstate = (e)=>{
         selectElement.appendChild(opt)
     })
   })
-}
+} *//*
 
 function selectValueChanged(){
 	//find a way to tell if folder is empty
@@ -93,9 +93,9 @@ getResourceList(file.filepath)
   loader.classList.remove('m-loader-visible')
   alert('That is not a folder')
 }
-}
+}*/
 
-var getResourceList = (path='/resources')=>{
+/*var getResourceList = (path='/resources')=>{
   return new Promise((resolve,reject)=>{
 fetch(`/api/resources/?path=${path}`)
 	.then(res=>res.json())
@@ -103,8 +103,8 @@ fetch(`/api/resources/?path=${path}`)
 			.catch((err)=>{reject(err)})
   })
 }
-
-form.onsubmit = (e)=>{
+*/
+/* form.onsubmit = (e)=>{
 e.preventDefault()}
 
 fileInputElement.onchange = ()=>{
@@ -118,9 +118,9 @@ for(var i = 0;i<fileInputElement.files.length;i++){
 fileList.push(fileInputElement.files[i])
 }
 console.log(fileList)
-}
+} */
 
-var prepareResource = (resource,path)=>{
+/* var prepareResource = (resource,path)=>{
 return new Promise((resolve)=>{
 let formData = new FormData()
 formData.append('resource',resource)
@@ -131,9 +131,9 @@ resolve(formData)
 reject('Error parsing form data')
 }
 })
-}
+} */
 
-var sendResources = (resource,path)=>{
+/* var sendResources = (resource,path)=>{
 loader.classList.add('m-loader-visible')
 loadingText.innerHTML = 'Uploading resource. Please wait...'
 prepareResource(resource,path)
@@ -159,8 +159,8 @@ body:formData
         console.log(err)
 
   })
-}
-
+} */
+/* 
 uploadButton.onclick = ()=>{
 if(fileList.length && selectedPath && selectedPath.trim()){
 fileList.forEach((resource,i)=>{
@@ -169,4 +169,4 @@ sendResources(resource,selectedPath)
 }else{
 alert('Choose a resource and upload path!')
 }
-}
+} */

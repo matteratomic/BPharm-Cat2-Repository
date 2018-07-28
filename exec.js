@@ -1,132 +1,244 @@
-var express = require('express')
-var app = express()
-var cors = require('cors')
-var fs = require('fs')
-var bodyParser = require('body-parser')
-var path = require('path')
-var formidable = require('formidable')
-var helmet = require('helmet')
-
-process.on('uncaughtException',(err)=>{
-	console.log(err,'AN ERROR OCCURRED. NODE NOT EXITING')
-})
-
-var port = parseInt(process.env.PORT || 3456)   
-app.listen(port,()=>{console.log(`Listening on port ${port}`)})
+const express = require('express')
+const app = express()
+const path = require('path')
+const mongoose = require('mongoose')
+const conn = mongoose.connection
+const bodyParser = require('body-parser')
+const formidable = require('formidable') 
+const {Folder} = require('./model.js')
+const Gfs = require('gridfs-stream')
+const fs = require('fs')
+const ejs = require('ejs')
+const dburi = "mongodb://IanMacharia:paramecium1@ds113849.mlab.com:13849/mydatabase"
+const port = parseInt(process.env.PORT || 1234,10)
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended:true}))
-app.use(cors())
-app.use(helmet())
-app.use('/static',express.static('./uploads'))
-app.use(express.static('./'))
+app.use(express.static('./views'))
+app.listen(port,()=>{console.log(`Listening on port ${port}`)})
 
-app.get('/',(req,res)=>{
-	res.sendFile(path.resolve(path.join(__dirname,'home.html')))
-})
+mongoose.Promise = global.Promise
+Gfs.mongo = mongoose.mongo
+mongoose.connect(dburi,{useNewUrlParser:true})
 
-app.post('/api/upload',(req,res)=>{
-	let form = new formidable.IncomingForm()
-	form.parse(req,(err,fields,files)=>{
-		if(files.resource){
-			console.log('file uploaded')
-			var oldPath = files.resource.path
-		var newPath = path.resolve(path.join(__dirname,'uploads',fields.path,files.resource.name))
-		
-		fs.rename(oldPath,newPath,(err)=>{
-		if(err) throw err;
-		console.log('file uploaded and moved')
-		res.status(200).json({message:'file uploaded and moved'})
-		})
-		}else{
-			console.log('file NOT uploaded',files)
-				res.status(500).send('500:Internal server Error')
-		}	
-	})	
-})
-
-const getResources = (filepath)=>{
-	return new Promise((resolve,reject)=>{
-					let resolvedPath = path.resolve(path.join(__dirname,'uploads',filepath))
-						fs.readdir(resolvedPath,(err,files)=>{
-					if(err) reject(err)
-						if(typeof files == 'undefined') reject(err)
-						let fileArray = files.map((f,i)=>{
-						let newPath = path.resolve(path.join(__dirname,'uploads',filepath,f))
-							try{
-							let stats = fs.statSync(newPath)
-							if(stats.isDirectory()){
-							return {name:f,type:'directory',filepath:`${filepath}/${f}`}
-							}else{
-							return {name:f,type:'file',filepath:`${filepath}/${f}`}
-							}
-							}catch(err){
-								reject(err) 
-							}	
-					})
-					resolve(fileArray)
-				})
-			
-	})
-}
-
-const deleteResource =(filepath)=>{
-return new Promise((resolve,reject)=>{
-	if(!filepath || !filepath.trim()) reject('No path given')
-	fs.unlink(path.resolve(filepath),(err)=>{
-		if(err) reject(err)
-		resolve('File deleted')
-	})
-})
-}
-
-app.get('/api/d',(req,res)=>{
-	if(!req.query.path || !req.query.path.trim()){
-
-	}else{
-		deleteResource()
-			.then((res)=>{
-				res.status(200).json({result})
-			}).catch((err)=>{
-				res.status(500).send('500:Internal server Error')
-		})
-	}
-})
-
-app.get('/api/isdirectory',(req,res)=>{
-	let filepath = req.query.path || 'resources'
-	isDirectory(filepath)
-		.then((result)=>{
-		res.status(200).json({result})
-		}).catch((err)=>{
-			res.status(500).json({error:err})
-		})
-})
-
-app.get('/api/resources',(req,res)=>{
-	let filepath = req.query.path || '/resources'
-	let isFile = req.query.isfile
-	if(isFile){
-		let readStream = fs.createReadStream(__dirname+'/uploads'+filepath,(err)=>{
-			if(err){
-				res.status(500).send('500:Internal server error....This is embarrassing')
-				console.log(err)
+conn.once('open',(err)=>{
+		const getFolderPath = (foldername)=>{
+		return new Promise((resolve,reject)=>{
+			Folder.findOne({folderName:foldername},(err,folder)=>{
+				if(err){
+					console.log(err)
+					reject(err)
+				}
+				if(folder.metadata){
+					resolve(folder.metadata.folderpath)
+				}else{
+					reject('File not found')
 				}
 			})
-			readStream.pipe(res)
-			
-	}else{
-	getResources(filepath)
-		.then((result)=>{
-			res.status(200).json({data:result})
 		})
-		.catch((err)=>{
-			res.status(500).send('500:Internal server error....This is embarrassing')
+	}
+
+	
+	app.get('/api/createfolder',(req,res)=>{
+		if(req.query.foldername){
+			if(req.query.parent && req.query.parent.trim()){
+				//use parent path to make child node path
+				getFolderPath(req.query.parent)
+					.then((parentpath)=>{
+					let parent = req.query.parent
+					let folderName = req.query.foldername
+					let folder = new Folder({
+						folderName,
+						metadata:{
+						folderpath:parentpath+"/"+folderName,
+						parent}
+					}) 
+
+					folder.save((err,folder)=>{
+						if(err){
+						console.log(`${folderName} already exists`)
+						res.status(500).json({error:`${folderName} already exists`})
+						}else{
+						console.log(`${folderName} was created successfully`)
+						res.status(200).json({message:`${folderName} was created successfully`})
+						}
+					})
+			}).catch(err=>console.log(err))
+			}else{
+					let folderName = req.query.foldername
+					let folder = new Folder({
+						folderName,
+						metadata:{
+						folderpath:"/"+folderName,
+						parent:""}
+					}) 
+					
+					folder.save((err,folder)=>{
+						if(err){
+						console.log(`${folderName} already exists`)
+						res.status(500).json({error:`${folderName} already exists`})
+						}else{
+						console.log(`${folderName} was created successfully`)
+						res.status(200).json({message:`${folderName} was created successfully`})
+						}
+					})
+			}
+		
+		}else{
+		res.status(400).json({error:`400:Bad Request`})
+		}
+	})
+
+	app.get('/api/getpath',(req,res)=>{
+		if(req.query.foldername && req.query.foldername.trim()){
+			getFolderPath(req.query.foldername)
+						.then((folderpath)=>{
+							res.status(200).json({folderpath})	
+						})
+						.catch((err)=>{
+							res.status(200).json({error:"Folder not found"})	
+					})
+		}else{
+		res.status(400).json({error:'400:Bad request'})	
+		}
+	})
+
+
+
+	app.get('/api/getfolder',(req,res)=>{
+		let folderpath = req.query.path || '/resources'
+		let query = {"metadata.path":req.query.path}
+		Folder.find(query,(err,folders)=>{
+			if(err){
+			console.log(`Error getting folder`)
+			res.status(500).json({error:`Error getting folder`})
+			}else{
+			console.log(folders)
+			res.status(500).json({data:{
+				folders
+			}})
+			}
+		})
+	})
+
+	if(err) console.log(err)
+		let gfs = Gfs(conn.db)
+		console.log('ESTABLISHED CONNECTION TO DATABASE')
+
+		app.get('/',(req,res)=>{
+		res.sendFile(path.resolve(path.join('views','home.html')))
 		})
 
-}})
-app.get('*',(req,res)=>{
-	res.sendFile(path.resolve(path.join(__dirname,'404.html')))
+		app.post('/api/upload',(req,res)=>{
+				let form = new formidable.IncomingForm()
+				form.parse(req,(err,fields,files)=>{
+				let parent = fields.selectedFolder
+					getFolderPath(parent)
+					.then((parentpath)=>{
+					let folderName = files.resource.name
+					let folder = new Folder({
+						folderName,
+						metadata:{
+						folderpath:parentpath+"/"+folderName,
+						parent}
+					}) 
+
+					folder.save((err,folder)=>{
+						if(err){
+						console.log(`${folderName} already exists`)
+						res.status(500).json({error:`${folderName} already exists`})
+						}else{
+						let writeStream = gfs.createWriteStream({
+							filename:files.resource.name,
+							mode:'w',
+							metadata:{
+								folderpath:parentpath+"/"+files.resource.name,
+								parent,
+								isDirectory:false
+							}
+						})
+						let readStream = fs.createReadStream(path.resolve(files.resource.path),(err)=>{
+							if(err){
+							res.status(500).json(
+								{error:'Internal server error'})	
+							}
+						})
+						readStream.pipe(writeStream)
+						writeStream.on('close',()=>{
+							res.status(200).json(
+								{data:{status:`${folderName} has been uploaded`}
+								})
+							})
+						}
+					})
+			}).catch((err)=>{
+						console.log(err)
+						res.status(400).json({error:'Folder given does not exist'})
+					})
+				})	
+			})
+
+		app.get('/api/getresource',(req,res)=>{
+			let filepath = req.query.filepath
+			let readStream = gfs.createReadStream({
+				"metadata.folderpath":filepath
+			})
+			readStream.on('error', function (err) {
+			  console.log('An error occurred!', err);
+			  throw err;
+});
+			readStream.pipe(res)
+		})
+
+		app.get('/api/openfolder',(req,res)=>{		
+			let query = req.query.foldername ? {"metadata.parent":req.query.foldername} : {"metadata.parent":'Resources'} 
+			console.log(query)
+			Folder.find(query,(err,files)=>{
+				console.log(files)
+				res.status(200).json({data:{
+					files
+				}})
+			})
+		})
+
+
+const deleteFolderOrFile = (folderName)=>{
+return new Promise((resolve,reject)=>{
+	Folder.remove({folderName},(err)=>{
+		if(err){reject(err)}
+			resolve(`${folderName} has been removed`)
+	})
+})
+}
+
+
+app.get('/test/delete',(req,res)=>{
+	let filename = req.query.filename
+	gfs.remove({filename}, function (err, gridStore) {
+					  if (err) console.log(err);
+					  res.status(200).json({message:`${filename} was removed`})
+					});
+})
+
+		app.get('/api/delete',(req,res)=>{
+			let folderName = req.query.foldername
+			deleteFolderOrFile(folderName)
+				.then((message)=>{
+					gfs.remove({filename:folderName}, function (err, gridStore) {
+					  if (err) console.log(err);
+					  res.status(200).json({message})
+					});
+				}).catch((err)=>{					 
+				 res.status(500).json({error:'500:Internal server error'})
+				}
+					)
+		})
+})
+
+conn.on('error',(err)=>{
+	console.log(err)
 })
 
 
-
+process.on('uncaughtException',(err)=>{
+	console.log(err,'Node not exiting')
+})
