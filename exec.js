@@ -220,12 +220,6 @@ return new Promise((resolve,reject)=>{
 }
 
 
-
-app.get('/testing',(req,res)=>{
-	console.log('deleting ',req.query.q)
-	res.status(200).json({message:`${req.query.q} deleted`})
-})
-
 		app.get('/api/delete',(req,res)=>{
 			let folderName = req.query.foldername
 			deleteFolderOrFile(folderName)

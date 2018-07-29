@@ -17,6 +17,7 @@
 
   <!-- Custom styles for this template -->
   <link href="cover.css" rel="stylesheet">
+  <link href="/css/loader.css" rel="stylesheet">
 </head>
 <style rel='stylesheet' type='text/css'>
   main {
@@ -26,7 +27,8 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    justify-content: center
+    justify-content: center;
+    z-index:0
   }
 
   ::-webkit-scrollbar {
@@ -68,6 +70,13 @@
 </style>
 
 <body class="text-center">
+  <div class='m-loader-content'>
+    <div class='m-loader-background'></div>
+  <div class='m-loader-overlay'>
+    <div class='m-loader'></div>
+    <p id='loading-text'>Loading..</p>
+  </div>
+</div>
   <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
      <header class="masthead mb-auto">
         <div class="inner">
@@ -80,14 +89,8 @@
           </nav>
         </div>
       </header>
-  
+
     <main role="main">
-      <div class='m-loader-content'>
-        <div class='m-loader-background-two'>
-          <div class='m-loader'></div>
-          <p id='loading-text'>Loading..</p>
-        </div>
-      </div>
     </main>
 
     <footer class="mastfoot mt-auto">
@@ -109,13 +112,13 @@
   <script type="text/javascript">
 
     var main = document.querySelector('main')
-    var loader = document.querySelector('.m-loader-background-two')
+    var loader = document.querySelector('.m-loader-content')
     var selectedFolder = ''
     window.onpopstate = (e) => {
       //let path = e.state.path || 'resources'
       let folderName = e.state.folderName || 'Resources'
       console.log(folderName)
-      //loader.classList.add('m-loader-visible')
+      loader.classList.add('m-loader-visible')
       getResourceList(folderName)
         .then((res) => {
           if (res.data.files.length !== 0) {
@@ -125,7 +128,7 @@
           }
           return res
         }).then((res) => {
-          //loader.classList.remove('m-loader-visible')
+          loader.classList.remove('m-loader-visible')
           res.data.files.forEach((file, i) => {
             let icon = file.metadata.isDirectory ? "http://icons.iconarchive.com/icons/custom-icon-design/flatastic-1/256/folder-icon.png" : "http://icons.iconarchive.com/icons/zhoolego/material/512/Filetype-Docs-icon.png"
             let fileNode = document.createElement('div')
@@ -148,10 +151,11 @@
       selectedFolder = foldername
       console.log(foldername)
       main.innerHTML = ''
+       loader.classList.add('m-loader-visible')
       getResourceList(selectedFolder)
         .then((res) => {
           window.history.pushState({ folderpath: '/Resources', folderName:foldername }, 'repository', '/')
-          console.log(res.data.files)
+             loader.classList.remove('m-loader-visible')
           res.data.files.forEach((file, i) => {
             console.log(file.metadata.isDirectory)
             let icon = file.metadata.isDirectory ? "http://icons.iconarchive.com/icons/custom-icon-design/flatastic-1/256/folder-icon.png" : "http://icons.iconarchive.com/icons/zhoolego/material/512/Filetype-Docs-icon.png"
