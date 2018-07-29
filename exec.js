@@ -8,7 +8,6 @@ const formidable = require('formidable')
 const {Folder} = require('./model.js')
 const Gfs = require('gridfs-stream')
 const fs = require('fs')
-const ejs = require('ejs')
 const childProcess = require('child_process')
 const dburi = "mongodb://IanMacharia:paramecium1@ds113849.mlab.com:13849/mydatabase"
 const port = parseInt(process.env.PORT || 1234,10)
