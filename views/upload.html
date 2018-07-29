@@ -130,27 +130,33 @@
 		}
 
 		window.onload = ()=>{
-      loader.classList.add('m-loader-visible')
-			getResourceList()
-			  .then((res)=>{
-			    selectedFolder = 'Resources'
-			    window.history.pushState({folderpath:'/Resources',folderName:'Resources'},'upload','/')
-			    let empOption = document.createElement('option')
-			  	empOption.innerHTML = 'Select a folder'
-			  	selectElement.appendChild(empOption)
+      let sct = window.localStorage.getItem('sct')
+      if(sct){
+         loader.classList.add('m-loader-visible')
+      getResourceList()
+        .then((res)=>{
+          selectedFolder = 'Resources'
+          window.history.pushState({folderpath:'/Resources',folderName:'Resources'},'upload','/')
+          let empOption = document.createElement('option')
+          empOption.innerHTML = 'Select a folder'
+          selectElement.appendChild(empOption)
           loader.classList.remove('m-loader-visible')
-			  	res.data.files.forEach((option,i)=>{            
-			        let opt = document.createElement('option')
-			        opt.value = JSON.stringify({
-			        	folderName:option.folderName,
-			        	folderpath:option.metadata.folderpath,
-			        	parent:option.metadata.parent,
-			        	isDirectory:option.metadata.isDirectory,
-			        	})
-			        opt.innerHTML = option.folderName
-			        selectElement.appendChild(opt)
-			      })
-			    })
+          res.data.files.forEach((option,i)=>{            
+              let opt = document.createElement('option')
+              opt.value = JSON.stringify({
+                folderName:option.folderName,
+                folderpath:option.metadata.folderpath,
+                parent:option.metadata.parent,
+                isDirectory:option.metadata.isDirectory,
+                })
+              opt.innerHTML = option.folderName
+              selectElement.appendChild(opt)
+            })
+          })
+      }else{
+        alert('Not authenticated')
+        window.location.href = '/home.html'
+      }
   }
 
 

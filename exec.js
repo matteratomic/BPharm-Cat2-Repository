@@ -11,7 +11,10 @@ const fs = require('fs')
 const childProcess = require('child_process')
 const dburi = "mongodb://IanMacharia:paramecium1@ds113849.mlab.com:13849/mydatabase"
 const port = parseInt(process.env.PORT || 1234,10)
+let currentFolder = ''
 app.use(bodyParser.json())
+var randomRoute
+const crypto = require('crypto')
 app.use(bodyParser.urlencoded({extended:true}))
 app.use(express.static('./views'))
 app.listen(port,()=>{console.log(`Listening on port ${port}`)})
@@ -20,7 +23,18 @@ mongoose.Promise = global.Promise
 Gfs.mongo = mongoose.mongo
 mongoose.connect(dburi,{useNewUrlParser:true})
 
+
+setInterval(()=>{
+		crypto.randomBytes(16,(err,buffer)=>{
+		if(err){
+			console.log(err)
+		}
+		randomRoute = buffer.toString('hex')
+	})
+},20000)
+
 conn.once('open',(err)=>{
+
 		const getFolderPath = (foldername)=>{
 		return new Promise((resolve,reject)=>{
 			Folder.findOne({folderName:foldername},(err,folder)=>{
@@ -36,6 +50,16 @@ conn.once('open',(err)=>{
 			})
 		})
 	}
+
+
+	app.get('/u:id',(res,req)=>{
+		if(req.params.id == randomRoute){
+					res.status(200).json({message:'You reached the route'})
+		}else{
+					res.status(200).json({message:'Incorrect password'})
+
+		}
+	})
 
 	app.get('/api/createfolder',(req,res)=>{
 		console.log('creating folder ',req.query.foldername)
@@ -102,7 +126,13 @@ conn.once('open',(err)=>{
 		}
 	})
 
-
+app.get('/authenticate',(req,res)=>{
+	if(req.query.password ==='WindyRain73@'){
+		res.status(200).json({secret:'Adrenocorticotropic1'})
+	}else{
+		res.status(200).json({error:'Incorrect password'})
+	}
+})
 
 	app.get('/api/getfolder',(req,res)=>{
 		let folderpath = req.query.path || '/resources'

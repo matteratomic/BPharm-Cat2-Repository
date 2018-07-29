@@ -83,7 +83,6 @@
           <h3 class="masthead-brand">KUPhsa</h3>
           <nav class="nav nav-masthead justify-content-center">
             <a class="nav-link" href="home.html">Home</a>
-                     <a class="nav-link" href="upload.html">Upload</a>
             <a class="nav-link active" href="repository.html">Repository</a>
           </nav>
         </div>
@@ -112,13 +111,18 @@
 
     var main = document.querySelector('main')
     var loader = document.querySelector('.m-loader-content')
-    var selectedFolder = ''
+    var selectedFolder
+
     window.onpopstate = (e) => {
-      //let path = e.state.path || 'resources'
-      let folderName = e.state.folderName || 'Resources'
-      console.log(folderName)
+      console.log(e.state)
+      console.log(e.state)
+      console.log(e.state)
+      console.log(e.state)
+      console.log(e.state)
+      selectedFolder = e.state.folderName
+      console.log('setting selected folder to ',selectedFolder,e.state.folderName)
       loader.classList.add('m-loader-visible')
-      getResourceList(folderName)
+      getResourceList(e.state.folderName)
         .then((res) => {
           if (res.data.files.length !== 0) {
             main.innerHTML = ''
@@ -147,23 +151,26 @@
     }
 
 
-    function traverseFolderRecursively(foldername = 'Resources') {
+    function traverseFolderRecursively(foldername) {
+      console.log('traverseFolderRecursively being called with ',foldername)
       selectedFolder = foldername
-      console.log(foldername)
-      main.innerHTML = ''
+            console.log('setting selected folder to ',selectedFolder)
+                main.innerHTML = ''
        loader.classList.add('m-loader-visible')
-      getResourceList(selectedFolder)
+      getResourceList(foldername)
         .then((res) => {
-          window.history.pushState({ folderpath: '/Resources', folderName:foldername }, 'repository', '/')
              loader.classList.remove('m-loader-visible')
+                    window.history.pushState({ folderpath: '/Resources', folderName:foldername }, 'repository', '/')
+                console.log('Pushing to history in traverseFolderRecursively ',foldername)
           res.data.files.forEach((file, i) => {
-            console.log(file,file.metadata.isDirectory)
+            console.log(file,file.metadata.isDirectory,selectedFolder)
             let icon = file.metadata.isDirectory ? "http://icons.iconarchive.com/icons/custom-icon-design/flatastic-1/256/folder-icon.png" : "http://icons.iconarchive.com/icons/zhoolego/material/512/Filetype-Docs-icon.png"
             let fileNode = document.createElement('div')
             fileNode.classList.add('m-file')
             fileNode.innerHTML = `<img style="width:100px;height:100px" src=${icon}/><p>${file.folderName}</p>`
             fileNode.onclick = () => {
               if (file.metadata.isDirectory) {
+                console.log('Calling traverseFolderRecursively again')
                 traverseFolderRecursively(file.folderName)
               } else {
                 getResource(file.folderName)
@@ -175,11 +182,14 @@
     }
 
     window.onload = () => {
-      traverseFolderRecursively()
+      selectedFolder = 'Resources'
+      traverseFolderRecursively('Resources')
     }
 
 
-    var getResourceList = (foldername = 'Resources') => {
+    var getResourceList = (foldername) => {
+      console.log('Calling getResourceList with ',foldername)
+
       return new Promise((resolve, reject) => {
         fetch(`/api/openfolder?foldername=${foldername}`)
           .then(res => res.json())
@@ -188,8 +198,8 @@
       })
     }
 
-    var getResource = (foldername) => {
-      window.location.href = `/api/getresource?filename=${foldername}`
+    var getResource = (foldername = 'Sem2_Year2') => {
+      window.location.assign(`/api/getresource?filename=${foldername}`)
     }
 
   </script>
