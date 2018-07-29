@@ -114,6 +114,7 @@
     window.onpopstate = (e) => {
       //let path = e.state.path || 'resources'
       let folderName = e.state.folderName || 'Resources'
+      console.log(folderName)
       //loader.classList.add('m-loader-visible')
       getResourceList(folderName)
         .then((res) => {
@@ -145,11 +146,12 @@
 
     function traverseFolderRecursively(foldername = 'Resources') {
       selectedFolder = foldername
+      console.log(foldername)
       main.innerHTML = ''
       getResourceList(selectedFolder)
         .then((res) => {
           window.history.pushState({ folderpath: '/Resources', folderName:foldername }, 'repository', '/')
-          console.log(res.data)
+          console.log(res.data.files)
           res.data.files.forEach((file, i) => {
             console.log(file.metadata.isDirectory)
             let icon = file.metadata.isDirectory ? "http://icons.iconarchive.com/icons/custom-icon-design/flatastic-1/256/folder-icon.png" : "http://icons.iconarchive.com/icons/zhoolego/material/512/Filetype-Docs-icon.png"

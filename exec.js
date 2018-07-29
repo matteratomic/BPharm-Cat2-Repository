@@ -38,7 +38,7 @@ conn.once('open',(err)=>{
 	}
 
 	app.get('/api/createfolder',(req,res)=>{
-		console.log('creating folder')
+		console.log('creating folder ',req.query.foldername)
 		if(req.query.foldername){
 			if(req.query.parent && req.query.parent.trim()){
 				//use parent path to make child node path
@@ -197,7 +197,12 @@ conn.once('open',(err)=>{
 			let query = req.query.foldername ? {"metadata.parent":req.query.foldername} : {"metadata.parent":'Resources'} 
 			console.log(query)
 			Folder.find(query,(err,files)=>{
-				console.log(files)
+				if(err){
+					console.log(err)
+					res.status(500).json({data:{
+						error:err
+					}})
+				}
 				res.status(200).json({data:{
 					files
 				}})
@@ -205,22 +210,20 @@ conn.once('open',(err)=>{
 		})
 
 
-const deleteFolderOrFile = (folderName)=>{
+const deleteFolderOrFile = (foldername)=>{
 return new Promise((resolve,reject)=>{
-	Folder.remove({folderName},(err)=>{
+	Folder.remove({folderName:foldername},(err)=>{
 		if(err){reject(err)}
-			resolve(`${folderName} has been removed`)
+			resolve(`${foldername} has been removed`)
 	})
 })
 }
 
 
-app.get('/test/delete',(req,res)=>{
-	let filename = req.query.filename
-	gfs.remove({filename}, function (err, gridStore) {
-					  if (err) console.log(err);
-					  res.status(200).json({message:`${filename} was removed`})
-					});
+
+app.get('/testing',(req,res)=>{
+	console.log('deleting ',req.query.q)
+	res.status(200).json({message:`${req.query.q} deleted`})
 })
 
 		app.get('/api/delete',(req,res)=>{

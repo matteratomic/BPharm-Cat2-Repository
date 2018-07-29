@@ -41,7 +41,7 @@ body {
 	-moz-animation: Gradient 15s ease infinite;
 	animation: Gradient 15s ease infinite;
   }
-  
+ 
   .m-loader-content{
 	  position:fixed;
 	  width:100vw;
