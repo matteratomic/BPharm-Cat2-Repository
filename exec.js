@@ -9,6 +9,7 @@ const {Folder} = require('./model.js')
 const Gfs = require('gridfs-stream')
 const fs = require('fs')
 const ejs = require('ejs')
+const childProcess = require('child_process')
 const dburi = "mongodb://IanMacharia:paramecium1@ds113849.mlab.com:13849/mydatabase"
 const port = parseInt(process.env.PORT || 1234,10)
 app.use(bodyParser.json())
@@ -37,8 +38,8 @@ conn.once('open',(err)=>{
 		})
 	}
 
-	
 	app.get('/api/createfolder',(req,res)=>{
+		console.log('creating folder')
 		if(req.query.foldername){
 			if(req.query.parent && req.query.parent.trim()){
 				//use parent path to make child node path
@@ -125,6 +126,10 @@ conn.once('open',(err)=>{
 		console.log('ESTABLISHED CONNECTION TO DATABASE')
 
 		app.get('/',(req,res)=>{
+			/*let ip = req.ip
+			childProcess.exec(`echo ${ip} >> ip.txt`,(err,res)=>{
+				console.log(res)
+			})*/
 		res.sendFile(path.resolve(path.join('views','home.html')))
 		})
 
