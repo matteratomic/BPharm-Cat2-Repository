@@ -1,6 +1,6 @@
 {
-  "short_name": "KUPhSA",
-  "name": "The Official KUPhSA website",
+  "short_name": "BPharm Cat2",
+  "name": "BPharm Cat2",
   "icons": [
     {
       "src": "favicon.png",
@@ -8,7 +8,7 @@
       "type": "image/x-icon"
     }
   ],
-  "start_url": "./index.html",
+  "start_url": "./home.html",
   "display": "standalone",
   "theme_color": "#007bff",
   "background_color": "#ffffff"

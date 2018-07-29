@@ -3,11 +3,10 @@
 
 <head>
   <meta charset="utf-8">
+     <meta name="theme-color" content="#007bff"><link rel="manifest" href="/manifest.json"><link rel="shortcut icon" href="/favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="description" content="BPHARM Cat2 Repository">
   <meta name="author" content="Ian Macharia">
-  <link rel="icon" href="/favicon.ico">
-
   <title>BPharm Cat2</title>
 
   <!-- Bootstrap core CSS -->
@@ -130,6 +129,7 @@
         }).then((res) => {
           loader.classList.remove('m-loader-visible')
           res.data.files.forEach((file, i) => {
+            console.log(file,file.metadata.isDirectory)
             let icon = file.metadata.isDirectory ? "http://icons.iconarchive.com/icons/custom-icon-design/flatastic-1/256/folder-icon.png" : "http://icons.iconarchive.com/icons/zhoolego/material/512/Filetype-Docs-icon.png"
             let fileNode = document.createElement('div')
             fileNode.classList.add('m-file')
@@ -157,7 +157,7 @@
           window.history.pushState({ folderpath: '/Resources', folderName:foldername }, 'repository', '/')
              loader.classList.remove('m-loader-visible')
           res.data.files.forEach((file, i) => {
-            console.log(file.metadata.isDirectory)
+            console.log(file,file.metadata.isDirectory)
             let icon = file.metadata.isDirectory ? "http://icons.iconarchive.com/icons/custom-icon-design/flatastic-1/256/folder-icon.png" : "http://icons.iconarchive.com/icons/zhoolego/material/512/Filetype-Docs-icon.png"
             let fileNode = document.createElement('div')
             fileNode.classList.add('m-file')
@@ -166,7 +166,7 @@
               if (file.metadata.isDirectory) {
                 traverseFolderRecursively(file.folderName)
               } else {
-                getResource(file.metadata.folderpath)
+                getResource(file.folderName)
               }
             }
             main.appendChild(fileNode)
@@ -188,8 +188,8 @@
       })
     }
 
-    var getResource = (path) => {
-      window.location.href = `/api/getresource?filepath=${path}`
+    var getResource = (foldername) => {
+      window.location.href = `/api/getresource?filename=${foldername}`
     }
 
   </script>

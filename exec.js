@@ -136,6 +136,7 @@ conn.once('open',(err)=>{
 				let form = new formidable.IncomingForm()
 				form.parse(req,(err,fields,files)=>{
 				let parent = fields.selectedFolder
+				console.log('Uploading to '+parent)
 					getFolderPath(parent)
 					.then((parentpath)=>{
 					let folderName = files.resource.name
@@ -143,14 +144,16 @@ conn.once('open',(err)=>{
 						folderName,
 						metadata:{
 						folderpath:parentpath+"/"+folderName,
-						parent}
+						parent,
+						isDirectory:false
+					}
 					}) 
-
 					folder.save((err,folder)=>{
 						if(err){
 						console.log(`${folderName} already exists`)
 						res.status(500).json({error:`${folderName} already exists`})
 						}else{
+						console.log(`Saved ${folderName} as folder but not as binary`)
 						let writeStream = gfs.createWriteStream({
 							filename:files.resource.name,
 							mode:'w',
@@ -165,9 +168,13 @@ conn.once('open',(err)=>{
 							res.status(500).json(
 								{error:'Internal server error'})	
 							}
+							console.log(`Making readstream from temp dir for ${folderName}`)
+
 						})
 						readStream.pipe(writeStream)
+
 						writeStream.on('close',()=>{
+							console.log(`Saved ${folderName} as as binary to database.....WERE DONE`)
 							res.status(200).json(
 								{data:{status:`${folderName} has been uploaded`}
 								})
@@ -182,14 +189,14 @@ conn.once('open',(err)=>{
 			})
 
 		app.get('/api/getresource',(req,res)=>{
-			let filepath = req.query.filepath
+			let fileName = req.query.filename
 			let readStream = gfs.createReadStream({
-				"metadata.folderpath":filepath
+				filename:fileName
 			})
 			readStream.on('error', function (err) {
 			  console.log('An error occurred!', err);
 			  throw err;
-});
+});	
 			readStream.pipe(res)
 		})
 
@@ -238,6 +245,19 @@ return new Promise((resolve,reject)=>{
 conn.on('error',(err)=>{
 	console.log(err)
 })
+conn.on('connecting', function() {
+    console.log('connecting to MongoDB...');
+  });
+conn.on('reconnected', function () {
+    console.log('MongoDB reconnected!');
+  });
+conn.on('disconnected', function() {
+    console.log('MongoDB disconnected!');
+    mongoose.connect(dburi, {server:{auto_reconnect:true}});
+  });
+conn.on('connected', function() {
+    console.log('MongoDB connected!');
+  });
 
 
 process.on('uncaughtException',(err)=>{
